@@ -5,6 +5,7 @@ interface IYulContract {
     function logToConsoleTests(string memory message, uint256 number, address account) external;
     function logMemory(string memory message) external;
     function logCalldata(string memory message, uint256 number, uint256[] memory ids) external;
+    function logCalldataWithSelector(string memory message, uint256 number) external;
     function logString() external;
     function logNumber() external;
 }
@@ -33,6 +34,10 @@ contract ConsoleLoggingWrapper {
 
     function logCalldata(string memory message, uint256 number, uint256[] memory ids) external {
         target.logCalldata(message, number, ids);
+    }
+
+    function logCalldataWithSelector(string memory message, uint256 number) external {
+        target.logCalldataWithSelector(message, number);
     }
 
 }

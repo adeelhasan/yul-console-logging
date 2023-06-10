@@ -16,10 +16,13 @@ object "ConsoleLogging" {
             require(iszero(callvalue()))
 
             // Dispatcher
-            switch selector()
+            switch shr(0xe0, calldataload(0))
                 case 0xe225cb96 {
                     //logCalldata(0x00, 0x04, sub(calldatasize(),0x04))
-                    logCalldata(0x00, true)
+                    logCalldata(0x00, true) //without selector
+                }
+                case 0xb4d33467 {
+                    logCalldata(0x00, false) //with selector
                 }
                 case 0xd0dc7b4b {
                     logString(0x00, "A string can only be a literal", 30)
@@ -27,7 +30,7 @@ object "ConsoleLogging" {
                 case 0x9f2c436f {
                     logNumber(0x00, 55)
                 }
-                case 0xeffad529 {
+                case 0xeffad529 {   //log memory
                     // copy some bytes from calldata, which is expected to be a single string parameter
                     // only log the data part of the string that was passed in
                     // note that we setup the memory to be logged away from where the log call is prepped
@@ -116,7 +119,6 @@ object "ConsoleLogging" {
                     mstore(add(memPtr, 0x44), mload(add(startingPointInMemory,memOffset)))
                     pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x64, 0x00, 0x00))
                 }                
-                //pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, startingPointInMemory, add(0x44, dataLengthRoundedToWord), 0x00, 0x00))
             }
             
             function logNumber(memPtr, _number) {
@@ -126,14 +128,7 @@ object "ConsoleLogging" {
             }
 
 
-            /* ---------- calldata decoding functions ----------- */
-            function selector() -> s {
-                s := decodeAsSelector(calldataload(0))
-            }
-
-            function decodeAsSelector(value) -> s {
-                s := div(value, 0x100000000000000000000000000000000000000000000000000000000)
-            }
+            /* ---------- utility functions ---------- */
 
             function decodeAsAddress(offset) -> v {
                 v := decodeAsUint(offset)
@@ -149,33 +144,6 @@ object "ConsoleLogging" {
                 v := calldataload(pos)
             }
 
-            /* ---------- calldata encoding functions ---------- */
-            function returnUint(v) {
-                mstore(0, v)
-                return(0, 0x20)
-            }
-            function returnTrue() {
-                returnUint(1)
-            }
-
-            /* ---------- utility functions ---------- */
-            function lte(a, b) -> r {
-                r := iszero(gt(a, b))
-            }
-            function gte(a, b) -> r {
-                r := iszero(lt(a, b))
-            }
-            function safeAdd(a, b) -> r {
-                r := add(a, b)
-                if or(lt(r, a), lt(r, b)) { revert(0, 0) }
-            }
-            function safeSub(a, b) -> r {
-                r := sub(a, b)
-                if gt(r, a) { revert(0, 0) }
-            }
-            function revertIfZeroAddress(addr) {
-                require(addr)
-            }
             function require(condition) {
                 if iszero(condition) { revert(0, 0) }
             }
@@ -187,52 +155,6 @@ object "ConsoleLogging" {
                 }
             }
 
-            //utility function for saving strings
-            function storeStringFromCallData(slotNoForLength, callDataOffsetForLength) {
-                let length := calldataload(callDataOffsetForLength)
-                if eq(length, 0) {
-                    revert(0x00,0x00)
-                }
-
-                sstore(slotNoForLength, length)
-                let strOffset := add(callDataOffsetForLength,0x20)
-                mstore(0x00, slotNoForLength)
-                let slotBase := keccak256(0x00,0x20)
-                let slotsNeeded := div(length, 0x20)
-                if gt(mod(length,0x20),0) {
-                    slotsNeeded := add(slotsNeeded, 1)
-                }
-
-                for {let slotCounter := 0} lt(slotCounter, slotsNeeded) {slotCounter := add(slotCounter, 1)}{
-                    sstore(add(slotBase,slotCounter), calldataload(strOffset))
-                    strOffset := add(strOffset, 0x20)
-                }
-            }            
-
-            function getStoredString(slotNoForLength) {
-                let length := sload(slotNoForLength)
-                mstore(0x00, slotNoForLength)
-                let slotBase := keccak256(0x00,0x20)
-
-                //return in the expected format, simpler when this is the only thing going back
-                mstore(0x00, 0x20)
-                mstore(0x20, length)
-                let strOffsetBase := 0x40
-                let slotCounterBase := slotBase
-                let strOffset := 0x00
-
-                let slotsNeeded := div(length, 0x20)
-                if gt(mod(length,0x20),0) {
-                    slotsNeeded := add(slotsNeeded,1)
-                }
-
-                for {let slotCounter := 0} lt(slotCounter, slotsNeeded) {slotCounter := add(slotCounter, 1)}{
-                    mstore(add(strOffsetBase, strOffset), sload(add(slotCounterBase, slotCounter)))
-                    strOffset := add(strOffset, 0x20)
-                }
-
-                return(0x00, mul(add(slotsNeeded,2),0x20))
-            }
             
         }
     }

@@ -7,21 +7,15 @@ import "src/ConsoleLoggingWrapper.sol";
 import "./lib/YulDeployer.sol";
 
 
-contract ERC1155Test is Test {
+contract ConsoleLoggingTest is Test {
     YulDeployer yulDeployer = new YulDeployer();
 
     IYulContract yulContract;
     ConsoleLoggingWrapper contractWrapper;
 
-    uint256[] ids = [1, 2, 3];
-
     function setUp() public {
         yulContract = IYulContract(yulDeployer.deployContract("ConsoleLogging"));
         contractWrapper = new ConsoleLoggingWrapper(yulContract);
-    }
-
-    function testLogToConsole() public {
-        contractWrapper.logCalldata("abcdefgh",56, ids);
     }
 
     function testLogString() public {
@@ -35,6 +29,18 @@ contract ERC1155Test is Test {
     function testLogMemory() public {
         console.log("output shoud show a sequence");
         contractWrapper.logMemory("ABCDEFG");
+    }
+
+    function testLogCalldataWithoutSelector() public {
+        uint256[] memory ids = new uint256[](3);
+        ids[0] = 1;
+        ids[1] = 2;
+        ids[2] = 3;
+        contractWrapper.logCalldata("abcdefgh",56, ids);
+    }
+
+    function testLogCalldataWithSelector() public {
+        contractWrapper.logCalldataWithSelector("abcdefgh",56);
     }
 
 }
