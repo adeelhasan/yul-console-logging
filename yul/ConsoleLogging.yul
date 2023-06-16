@@ -18,7 +18,6 @@ object "ConsoleLogging" {
             // Dispatcher
             switch shr(0xe0, calldataload(0))
                 case 0xe225cb96 {
-                    //logCalldata(0x00, 0x04, sub(calldatasize(),0x04))
                     logCalldata(0x00, true) //without selector
                 }
                 case 0xb4d33467 {
@@ -29,6 +28,13 @@ object "ConsoleLogging" {
                 }
                 case 0x9f2c436f {
                     logNumber(0x00, 55)
+                }
+                case 0x465d521a { //logAddress
+                    logAddress(0x00, caller())
+                }
+                case 0x1cbbeb66 {   //logCalldataByOffset, example is to log the second word in calldata
+                    logCalldataByOffset(0x00, 0x24)
+                    //logCalldata(0x00, false) //with selector
                 }
                 case 0xeffad529 {   //log memory
                     // copy some bytes from calldata, which is expected to be a single string parameter
@@ -41,6 +47,8 @@ object "ConsoleLogging" {
                     revertWithReason("unimplemented selector", 22)
                 }
 
+
+            //reason is a string literal
             function revertWithReason(reason, reasonLength) {
                 let ptr := 0x00 //since we are going to abort, can use memory at 0x00
                 mstore(ptr, shl(0xe0,0x08c379a)) // Selector for method Error(string)
@@ -50,7 +58,7 @@ object "ConsoleLogging" {
                 revert(ptr, 0x64)
             }
 
-            //reason has to be at most 32 bytes
+            //reason is a string literal
             function requireWithMessage(condition, reason, reasonLength) {
                 if iszero(condition) { 
                     revertWithReason(reason, reasonLength)
@@ -63,17 +71,17 @@ object "ConsoleLogging" {
                 mstore(add(memPtr, 0x04), 0x20)             //offset
                 mstore(add(memPtr, 0x24), lengthOfMessage)  //length
                 mstore(add(memPtr, 0x44), message)          //data
-                pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x64, 0x00, 0x00))
+                pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
             }
 
-            function logCalldataUnWrapped(memPtr, offset, length) {
+            function logCalldataByOffset(memPtr, offset) {
                 mstore(memPtr, shl(0xe0, 0xe17bf956))
                 mstore(add(memPtr, 0x04), 0x20)
-                mstore(add(memPtr, 0x24), length)
-                calldatacopy(add(memPtr, 0x44), offset, length)
-                let dataLengthRoundedToWord := roundToWord(length)
+                mstore(add(memPtr, 0x24), 0x20)
+                calldatacopy(add(memPtr, 0x44), offset, 0x20)
+                //let dataLengthRoundedToWord := roundToWord(length)
                 
-                pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, mul(0x20,add(dataLengthRoundedToWord, 2)), 0x00, 0x00))
+                pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
             }
 
             function logCalldata(memPtr, skipSelector) {
@@ -86,7 +94,7 @@ object "ConsoleLogging" {
                 let dataLength := calldatasize()
                 let calldataOffset := 0x00
                 if skipSelector {
-                    dataLength := sub(dataLength,4)
+                    dataLength := sub(dataLength, 4)
                 }
                 let dataLengthRoundedToWord := roundToWord(dataLength)
                 
@@ -96,8 +104,16 @@ object "ConsoleLogging" {
                         calldataOffset := add(calldataOffset,0x04)
                     }    
                     calldatacopy(add(memPtr, 0x44), calldataOffset, 0x20)
-                    pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x64, 0x00, 0x00))
+                    pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
                 }
+            }
+
+            function logAddress2(memPtr, addressValue) {
+                mstore(memPtr, shl(0xe0, 0xe17bf956))
+                mstore(add(memPtr, 0x04), 0x20)
+                mstore(add(memPtr, 0x24), 0x20)
+                mstore(add(memPtr, 0x44), addressValue)
+                pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
             }
 
             function logAddress(memPtr, addressValue) {
@@ -105,7 +121,7 @@ object "ConsoleLogging" {
                 mstore(add(memPtr, 0x04), 0x20)
                 mstore(add(memPtr, 0x24), 0x20)
                 mstore(add(memPtr, 0x44), addressValue)
-                pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x64, 0x00, 0x00))
+                pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
             }
 
             function logMemory(memPtr, startingPointInMemory, length) {
@@ -117,32 +133,18 @@ object "ConsoleLogging" {
                 for { let i := 0 } lt(i, dataLengthRoundedToWord) { i:= add(i, 1) } {
                     memOffset := mul(i, 0x20)
                     mstore(add(memPtr, 0x44), mload(add(startingPointInMemory,memOffset)))
-                    pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x64, 0x00, 0x00))
+                    pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x64, 0x00, 0x00))
                 }                
             }
             
             function logNumber(memPtr, _number) {
                 mstore(memPtr, shl(0xe0,0x9905b744))
                 mstore(add(memPtr, 0x04), _number)
-                pop(staticcall(gas(), 0x000000000000000000636F6e736F6c652e6c6f67, memPtr, 0x24, 0x00, 0x00))
+                pop(staticcall(gas(), consoleContractAddress(), memPtr, 0x24, 0x00, 0x00))
             }
 
 
             /* ---------- utility functions ---------- */
-
-            function decodeAsAddress(offset) -> v {
-                v := decodeAsUint(offset)
-                if iszero(iszero(and(v, not(0xffffffffffffffffffffffffffffffffffffffff)))) {
-                    revert(0, 0)
-                }
-            }
-            function decodeAsUint(offset) -> v {
-                let pos := add(4, mul(offset, 0x20))
-                if lt(calldatasize(), add(pos, 0x20)) {
-                    revert(0, 0)
-                }
-                v := calldataload(pos)
-            }
 
             function require(condition) {
                 if iszero(condition) { revert(0, 0) }
@@ -153,6 +155,10 @@ object "ConsoleLogging" {
                 if gt(mod(length,0x20),0) {
                     numberOfWords := add(numberOfWords, 1)
                 }
+            }
+
+            function consoleContractAddress() -> a {
+                a := 0x000000000000000000636F6e736F6c652e6c6f67
             }
 
             

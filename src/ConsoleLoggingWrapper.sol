@@ -8,6 +8,8 @@ interface IYulContract {
     function logCalldataWithSelector(string memory message, uint256 number) external;
     function logString() external;
     function logNumber() external;
+    function logAddress() external;
+    function logCalldataByOffset(uint256 param1, uint256 param2) external;
 }
 
 contract ConsoleLoggingWrapper {
@@ -39,6 +41,15 @@ contract ConsoleLoggingWrapper {
     function logCalldataWithSelector(string memory message, uint256 number) external {
         target.logCalldataWithSelector(message, number);
     }
+
+    function logAddress() external {
+        target.logAddress();
+    }
+
+    function logCalldataByOffset(uint256 param1, uint256 param2) external {
+        target.logCalldataByOffset(param1, param2);
+    }
+
 
 }
 
