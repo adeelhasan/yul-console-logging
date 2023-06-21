@@ -39,9 +39,9 @@ object "ConsoleLogging" {
                 case 0xeffad529 {   //log memory
                     // copy some bytes from calldata, which is expected to be a single string parameter
                     // only log the data part of the string that was passed in
-                    // note that we setup the memory to be logged away from where the log call is prepped
-                    calldatacopy(0xa0, 0x44, 0x20)
-                    logMemory(0x00, 0xa0, 0x20)
+                    // note that we setup the log call away from the memory where the call data is copied
+                    calldatacopy(0x00, 0x44, 0x20)
+                    logMemory(0xa0, 0x00, 0x20)
                 }
                 default {
                     revertWithReason("unimplemented selector", 22)

@@ -5,23 +5,22 @@ When writing a pure Yul contract, it can be helpful to write out to the console 
 ```solidity
 
 //from within yul code
-logString(memPtr, "calldata size", 13)
+logString(memPtr, "log the calldata size", 21)
 logNumber(memPtr, calldatasize())
 
 ```
 Which will print a string and a number in the terminal (when running a test with -vvv (or -vvvv) in Foundry.)
 
-
-Points to note:
+## Points to note:
 Logging works via a static call to the console contract (which in turn emits events captured by the dev process) which is deployed on the test network. Memory is needed to be prepared for this call. 
 
-There is thus a memPtr parameter for the calls, and depending on the context, the memPtr parameter could be 0x00 or it could be it far off so as to not disturb what is already there.
+There is thus a memPtr parameter for the calls, and depending on the context, the memPtr parameter could be 0x00 or it could be it far off to avoid collisions.
 
 These are some of the main functions:
 
-- logString
+- logString(stringLiteral, lengthOfString)
 
-- logCalldata()
+- logCalldata
 
 - requireWithMessage
 ```yul
@@ -30,10 +29,9 @@ requireWithMessage(someCondition(), "condition was false", 18)
 
 - revertWithReason
 
-# How it works
-
-On the test network, a console contract deployed at a known address. A static call to that address taps into the various functions available. Events emitted from that contract are then received by and displayed on the terminal.
 
 # Acknowledgements
 
-This repo was inspired by Huff.console, by . Thanks also to Jeff Scholz for his help.
+This repo was inspired by [Huff-Console](https://github.com/AmadiMichael/Huff-Console), by [Michael Amadi](https://github.com/AmadiMichael).
+
+Thanks also to [Jeffrey Scholz](https://github.com/jeffreyscholz) for his help.
