@@ -33,6 +33,6 @@ Since the static call is prepared in memory, we have to be mindful of collisions
 
 ## Acknowledgements
 
-This repo was inspired by [@AmadiMichael's ](https://github.com/AmadiMichael)[Huff-Console](https://github.com/AmadiMichael/Huff-Console) .
+This repo was inspired by [@AmadiMichael's ](https://github.com/AmadiMichael)[Huff-Console](https://github.com/AmadiMichael/Huff-Console).
 
 Thanks also to [@jeffreyscholz](https://github.com/jeffreyscholz) for his help.
