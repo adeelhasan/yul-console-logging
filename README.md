@@ -31,7 +31,7 @@ If you need to log a string, int and bool you would call ```function log(string 
 ## Point to note
 Since the static call is prepared in memory, we have to be mindful of collisions. Thus most functions take in a memPtr which is used as the point to prepare data. The exception are those functions which print a message on a revert, when 0x00 can be used by default.
 
-# Acknowledgements
+## Acknowledgements
 
 This repo was inspired by [@AmadiMichael](https://github.com/AmadiMichael)[Huff-Console](https://github.com/AmadiMichael/Huff-Console) .
 
