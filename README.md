@@ -15,7 +15,7 @@ Which will print a string and a number in the terminal (when running a test with
 
 Copy and paste functions from ConsoleLogging.yul into your own contract. You will also need the utility functions towards the bottom of this file.
 
-If you run the tests on this project, you will see sample output for supported formats.
+If you run the tests on this project, you will see sample output for supported formats. (shown at the end of this README as well)
 
 
 ## How it works
