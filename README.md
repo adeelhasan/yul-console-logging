@@ -11,24 +11,23 @@ logNumber(memPtr, calldatasize())
 ```
 Which will print a string and a number in the terminal (when running a test with -vvv (or -vvvv) in Foundry.)
 
-## Points to note:
-Logging works via a static call to the console contract (which in turn emits events captured by the dev process) which is deployed on the test network. Memory is needed to be prepared for this call. 
+## Usage
 
-There is thus a memPtr parameter for the calls, and depending on the context, the memPtr parameter could be 0x00 or it could be it far off to avoid collisions.
+Copy and paste functions from ConsoleLogging.yul into your own contract. You will also need the utility functions towards the bottom of this file.
 
-These are some of the main functions:
+If you run the tests on this project, you will see sample output for supported outputs.
 
-- logString(stringLiteral, lengthOfString)
 
-- logCalldata
+## How it works
+Logging works via a static call to the console contract which is deployed on the test network. Depending on what constitutes the output, the appropriate function on that contract needs to be called. This in turn emits events captured by the development process and then shown on the console/terminal.
 
-- requireWithMessage
-```yul
-requireWithMessage(someCondition(), "condition was false", 18)
-```
+The contract is here:
+[https://github.com/NomicFoundation/hardhat/blob/main/packages/hardhat-core/console.sol](https://github.com/NomicFoundation/hardhat/blob/main/packages/hardhat-core/console.sol)
 
-- revertWithReason
+So eg, you will to output a string, the selector is 0x0bb563d6, corresponding to ```function logString(string memory p0)```. If you need to log a string, int and bool you would call ```function log(string memory p0, uint256 p1, bool p2)``` following the same template.
 
+## Point to note
+Since the static call is prepared in memory, we have to be mindful of collisions. Thus most functions take in a memPtr which is used as the point to prepare data. The exception are those functions which print a message on a revert, when 0x00 can be used by default.
 
 # Acknowledgements
 
