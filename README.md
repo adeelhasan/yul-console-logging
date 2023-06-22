@@ -24,7 +24,7 @@ Logging works via a static call to the console contract which is deployed on the
 The contract is here:
 [https://github.com/NomicFoundation/hardhat/blob/main/packages/hardhat-core/console.sol](https://github.com/NomicFoundation/hardhat/blob/main/packages/hardhat-core/console.sol)
 
-So eg, you to output a string, the selector is 0x0bb563d6, corresponding to ```function logString(string memory p0)```.
+So eg, for you to output a string, the selector is 0x0bb563d6, corresponding to ```function logString(string memory p0)```.
 
 If you need to log a string, int and bool you would call ```function log(string memory p0, uint256 p1, bool p2)``` following the same template.
 
